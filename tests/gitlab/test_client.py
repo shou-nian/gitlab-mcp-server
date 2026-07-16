@@ -20,9 +20,7 @@ def test_get_file_encodes_paths_and_sends_authentication() -> None:
     async def run() -> None:
         def handler(request: httpx.Request) -> httpx.Response:
             encoded_path = request.url.raw_path.split(b"?", maxsplit=1)[0]
-            assert encoded_path == (
-                b"/api/v4/projects/group%2Frepo/repository/files/src%2Fapp.py"
-            )
+            assert encoded_path == (b"/api/v4/projects/group%2Frepo/repository/files/src%2Fapp.py")
             assert request.url.params["ref"] == "feature/test"
             assert request.headers["private-token"] == "test-token"
             return httpx.Response(200, json={"file_name": "app.py"})

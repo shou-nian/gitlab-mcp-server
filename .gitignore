@@ -9,5 +9,14 @@ wheels/
 # Virtual environments
 .venv
 
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+
 # Pycharm files
 .idea
