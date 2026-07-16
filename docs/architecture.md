@@ -31,7 +31,7 @@ GitLab REST API v4
 
 ## 生命周期
 
-生产启动时，MCP lifespan 创建一个 `GitLabClient`，四个 Tool 共用同一 `httpx.AsyncClient` 连接池。Server 停止时异步关闭连接池。测试通过 `create_server(client=...)` 注入 Mock Client，因此不读取 Token，也不会访问网络。
+生产启动时，MCP lifespan 创建一个 `GitLabClient`，四个 Tool 共用同一 `httpx.AsyncClient` 连接池。命令行入口监听 `SIGINT` 和 `SIGTERM`；收到退出信号后取消 stdio Server 任务并等待 lifespan 完整退栈，然后异步关闭连接池。MCP Client 正常关闭 stdin 时也会执行相同的清理流程。测试通过 `create_server(client=...)` 注入 Mock Client，因此不读取 Token，也不会访问网络。
 
 ## 数据流
 

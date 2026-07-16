@@ -61,6 +61,8 @@ uv run gitlab-mcp
 
 Server 使用 stdio 传输；直接启动后等待 MCP Client 消息属于正常行为。日志写入 stderr，不会污染 MCP 协议的 stdout。
 
+Server 支持优雅退出。MCP Client 关闭 stdin、发送 `SIGINT`（如 `Ctrl+C`）或发送 `SIGTERM` 时，Server 会停止接收请求、取消仍在执行的任务，并在进程退出前关闭 GitLab HTTP 连接池。正常退出过程及结果只记录到 stderr，不会输出 Python traceback。
+
 也可以使用仓库根兼容入口：
 
 ```bash

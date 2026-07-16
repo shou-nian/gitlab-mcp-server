@@ -1,8 +1,10 @@
 """MCP Server 注册和调用测试。"""
 
 import asyncio
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
+from gitlab_mcp import server as server_module
+from gitlab_mcp.config import Settings
 from gitlab_mcp.gitlab.client import GitLabClient
 from gitlab_mcp.server import create_server
 
@@ -46,5 +48,40 @@ def test_registered_project_tool_can_be_called() -> None:
         assert content
         assert structured_content["success"] is True
         assert structured_content["data"]["path_with_namespace"] == "group/demo"
+
+    asyncio.run(run())
+
+
+def test_lifespan_closes_gitlab_client_when_cancelled(monkeypatch) -> None:
+    async def run() -> None:
+        closed = False
+
+        class FakeGitLabClient:
+            async def __aenter__(self) -> "FakeGitLabClient":
+                return self
+
+            async def __aexit__(self, *args: object) -> None:
+                nonlocal closed
+                closed = True
+
+        settings = Settings(
+            gitlab_url="https://gitlab.example.com",
+            gitlab_token="test-token",
+            _env_file=None,
+        )
+        monkeypatch.setattr(
+            server_module,
+            "GitLabClient",
+            Mock(return_value=FakeGitLabClient()),
+        )
+        lifespan = server_module._create_lifespan(settings)
+
+        try:
+            async with lifespan(Mock()):
+                raise asyncio.CancelledError
+        except asyncio.CancelledError:
+            pass
+
+        assert closed is True
 
     asyncio.run(run())
